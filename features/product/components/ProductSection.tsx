@@ -8,6 +8,8 @@ import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { Dimensions } from "react-native";
 import { HStack } from "@/components/ui/hstack";
+import { Button, ButtonIcon, ButtonText } from "@/components/ui/button";
+import { MoveUpRight } from "lucide-react-native";
 
 const ProductSection = () => {
   const width = Dimensions.get("window").width;
@@ -26,19 +28,14 @@ const ProductSection = () => {
         // contentContainerStyle={{ paddingHorizontal: 10 }}
         showsVerticalScrollIndicator={false}
         // columnWrapperStyle={{ paddingHorizontal: 10, marginVertical: 10 }}// not working in flashList working flatList
-        // ListFooterComponent={() => (
-        //   <HStack>
-        //     <Pressable className="mx-auto mt-1">
-        //       <Text className="border px-4 py-2 rounded-lg">Explore More</Text>
-        //     </Pressable>
-        //   </HStack>
-        // )}
+        ListFooterComponent={() => (
+          <Button variant="outline" className="mx-auto my-1 bg-slate-100">
+            <ButtonText>Explore More</ButtonText>
+            <ButtonIcon as={MoveUpRight} />
+          </Button>
+        )}
       />
-      <HStack>
-            <Pressable className="mx-auto mt-1">
-              <Text className="border px-4 py-2 rounded-lg">Explore More</Text>
-            </Pressable>
-          </HStack>
+      
     </VStack>
   );
 };
