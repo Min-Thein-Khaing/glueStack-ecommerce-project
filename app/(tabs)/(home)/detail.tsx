@@ -22,9 +22,9 @@ const Detail = () => {
           headerShadowVisible: true,
           headerLeft: () => (
             <Pressable onPress={() => router.back()}>
-              <HStack className="gap-1 items-center">
-                <Icon className="" as={ChevronLeft} size="xl" />
-                <Text className="text-md font-bold text-black">Home</Text>
+              <HStack className="gap-1 items-center ">
+                <Icon className="text-blue-600" as={ChevronLeft} size="xl" />
+                <Text className="text-md font-bold text-blue-600">Home</Text>
               </HStack>
             </Pressable>
           ),
