@@ -29,7 +29,7 @@ const ProductList = ({
 }: ProductProps) => {
   const router = useRouter();
   return (
-    <Pressable onPress={() => router.navigate(`/detail`)}>
+    <Pressable onPress={() => router.navigate({pathname:"/detail",params:{id:id}})}>
       <Card className="p-2">
         <Image
           style={{ width: "100%", aspectRatio: 3 / 4, borderRadius: 5 }}
@@ -57,9 +57,9 @@ const ProductList = ({
           </HStack>
           <Text>{title.length > 21 ? title.slice(0, 21) + "..." : title}</Text>
           <HStack className="items-center gap-2">
-            <Text className="text-lg font-bold text-green-800">${price}</Text>
+            <Text className="text-lg font-bold text-green-600">${price.toFixed(2)}</Text>
             {discount > 0 && (
-              <Text className="text-sm font-medium text-red-500 line-through">${discount}</Text>
+              <Text className="text-sm font-medium text-red-500 line-through">${discount.toFixed(2)}</Text>
             )}
           </HStack>
         </VStack>

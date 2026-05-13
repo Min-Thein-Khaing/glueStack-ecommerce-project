@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     height: height / 4,
   },
   pagerHeight: {
-    height: height * 4,
+    height: height / 4,
   },
   image: {
     width: "100%",
