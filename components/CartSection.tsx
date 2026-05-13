@@ -4,12 +4,16 @@ import { Badge, BadgeText } from './ui/badge'
 import { Button, ButtonText } from './ui/button'
 import { Icon } from './ui/icon'
 import { VStack } from './ui/vstack'
+import { useRouter } from 'expo-router'
+import { Pressable } from './ui/pressable'
 
 const CartSection = () => {
   const cartItemsCount = 9;
+  const router = useRouter()
   return (
+    <Pressable onPress={() => router.push('/cart')}>
     <VStack className="items-center mr-2">
-      <Badge
+      <Badge   
         className={`z-10 self-end justify-center items-center ${cartItemsCount > 9 ? "h-5 w-5" : "h-4 w-4"} bg-red-600 rounded-full p-0 -mb-4 -mr-2 min-w-0`}
         variant="solid"
       >
@@ -21,6 +25,7 @@ const CartSection = () => {
         </ButtonText>
       </Button>
     </VStack>
+    </Pressable>
   )
 }
 
