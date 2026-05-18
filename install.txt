@@ -1,0 +1,5 @@
+//youtuber using 
+
+npx expo install @expo/ui
+npx expo install expo-dev-client
+npm run expo:ios

@@ -16,12 +16,13 @@ import TapButton from "@/components/TapButton";
 
 const Detail = () => {
   const router = useRouter();
-  const {id} = useLocalSearchParams()
+  const { id } = useLocalSearchParams()
   const product = products.find((product) => product.id === Number(id));
   return (
     <VStack className="flex-1">
       <Stack.Screen
         options={{
+          headerTintColor: "purple",
           headerTitle: "Product Detail",
           headerTitleStyle: { fontSize: 16, fontWeight: "bold" },
           headerTitleAlign: "center",
@@ -36,16 +37,16 @@ const Detail = () => {
             </Pressable>
           ),
           headerRight: () => (
-            <Pressable className="">
+            <VStack className="mr-4">
               <CartSection />
-            </Pressable>
+            </VStack>
           ),
 
         }}
       />
       <ViewPager />
-      <ScrollView  showsVerticalScrollIndicator={false} className="bg-white flex-1">
-        {product && <ProductDetail {...product}/>}
+      <ScrollView showsVerticalScrollIndicator={false} className="bg-white flex-1">
+        {product && <ProductDetail {...product} />}
       </ScrollView>
       <TapButton />
     </VStack>

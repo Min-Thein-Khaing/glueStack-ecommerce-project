@@ -12,7 +12,7 @@ import { Text } from "@/components/ui/text"
 import { VStack } from "@/components/ui/vstack"
 import { ProductProps } from "@/types/ProductType"
 import { Heart, Minus, Plus, Star, X } from "lucide-react-native"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 
 import { useAppToast } from "@/components/Toast"
 import {
@@ -44,9 +44,12 @@ const ProductDetail = (product: ProductProps) => {
 
     const { handleToast } = useAppToast()
     const [count, setCount] = useState(1)
+
+    //multiple checkbox error fix 
+    const [resetKey, setResetKey] = useState(0)
     const handleSubmit = () => {
 
-        if (color.length === 0 || size.length === 0) {
+        if (quantity === 0) {
             return;
         }
 
@@ -65,8 +68,12 @@ const ProductDetail = (product: ProductProps) => {
 
         setCart((prev) => [...newItems, ...prev]);
         handleClose()
+        setResetKey((prev) => prev + 1)
+        setColors([])
+        setSizes([])
         setCount(1)
     };
+    
 
 
     const handleRemove = (id: number) => {
@@ -108,6 +115,7 @@ const ProductDetail = (product: ProductProps) => {
             </Text>
 
             <CheckboxGroup
+                key={`color-${resetKey}`}
                 value={color}
                 onChange={(keys) => {
                     setColors(keys)
@@ -135,6 +143,7 @@ const ProductDetail = (product: ProductProps) => {
             </Text>
 
             <CheckboxGroup
+                key={`size-${resetKey}`}
                 value={size}
                 onChange={(keys) => {
                     setSizes(keys);

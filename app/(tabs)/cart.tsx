@@ -14,7 +14,6 @@ import { Minus, Plus, Trash, TrashIcon } from 'lucide-react-native'
 
 import { Image } from 'expo-image'
 
-import { carts } from '@/data'
 import { Fab } from '@/components/ui/fab'
 
 import {
@@ -26,12 +25,14 @@ import {
   AlertDialogBackdrop,
 } from '@/components/ui/alert-dialog';
 import { Box } from '@/components/ui/box'
+import { useCartStore } from '@/stores/useCartStore'
 
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
 
 const Cart = () => {
   const [showAlertDialog, setShowAlertDialog] = useState(false);
+  const {carts, getTotalPrice} = useCartStore()
   const handleClose = () => setShowAlertDialog(false);
   const handleDelete = (id: number) => {
     Alert.alert(
@@ -171,7 +172,7 @@ const Cart = () => {
       <VStack className='bg-white  p-6 rounded-2xl  border mx-2 border-gray-100 shadow-md'>
         <HStack className='justify-between '>
           <Text className='text-gray-500'>Total</Text>
-          <Text className='font-bold text-gray-900'>$1499.99</Text>
+          <Text className='font-bold text-gray-900'>${getTotalPrice().toFixed(2)}</Text>
         </HStack>
 
 
