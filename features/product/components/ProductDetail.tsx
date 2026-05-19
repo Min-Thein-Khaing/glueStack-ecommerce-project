@@ -23,21 +23,21 @@ import {
     ActionsheetDragIndicatorWrapper
 } from '@/components/ui/actionsheet'
 import { Button, ButtonIcon, ButtonText } from "@/components/ui/button"
+import { useCartStore } from '@/stores/useCartStore'
+import { CartItem } from '@/types/CartType'
+import TapButton from '@/components/TapButton'
+import { ScrollView } from 'react-native'
+import { useRouter } from 'expo-router'
 
 
 
-type CartProp = {
-    id: number,
-    size: string,
-    color: string,
-    quantity: number
-}
+
 const ProductDetail = (product: ProductProps) => {
-    const { brand, title, star, quantity, price, discount, image, users, sizes, colors, description } = product
+    const { brand, title, star, quantity, price, discount, image, users, sizes, colors, description , id} = product
     const [more, setMore] = useState(false)
     const [color, setColors] = React.useState<string[]>([]);
     const [size, setSizes] = React.useState<string[]>([]);
-    const [cart, setCart] = useState<CartProp[]>([])
+    const [cart, setCart] = useState<CartItem[]>([])
 
     const [showActionsheet, setShowActionsheet] = React.useState(false);
     const handleClose = () => setShowActionsheet(false);
@@ -47,13 +47,18 @@ const ProductDetail = (product: ProductProps) => {
 
     //multiple checkbox error fix 
     const [resetKey, setResetKey] = useState(0)
+
+    //useCartStore
+    const { addCart , clearAllCart} = useCartStore()
+    //router 
+    const router = useRouter()
     const handleSubmit = () => {
 
         if (quantity === 0) {
             return;
         }
 
-        const newItems: CartProp[] = [];
+        const newItems: CartItem[] = [];
 
         color.forEach((col) => {
             size.forEach((siz) => {
@@ -73,15 +78,34 @@ const ProductDetail = (product: ProductProps) => {
         setSizes([])
         setCount(1)
     };
-    
+    const handleAddToCart = ()=> {
+        if(cart.length === 0) {
+            handleToast({title: 'Please select color and size', description: 'error', successError: false})
+            return
+
+        }
+        addCart({
+            id ,
+            title,
+            price,
+            image,
+            items:cart
+        })
+        handleToast({title: 'Product added to cart', description: 'success', successError: true})
+        setCart([])
+        router.back()
+    }
 
 
     const handleRemove = (id: number) => {
         setCart(cart => cart.filter((item) => item.id !== id))
     }
+    
 
     return (
-        <VStack className="gap-1 my-4 mx-4">
+        <>
+        <ScrollView showsVerticalScrollIndicator={false}>
+            <VStack className="gap-1 my-4 mx-4">
             <HStack className="justify-between items-center">
                 <HStack className="justify-start items-center gap-2">
                     <Text>{brand}</Text>
@@ -185,22 +209,27 @@ const ProductDetail = (product: ProductProps) => {
                     handleToast({
                         title,
                         description,
+                        successError: false
                     });
                 }}
             >
                 <ButtonText>
                     Set Quantity
                 </ButtonText>
-
+                
             </Button>
+            
+            <>
             {cart.length > 0 && (
                 <VStack className=' w-full '>
+                    <Text className='text-xl font-bold mt-5'>Total Price ${cart.reduce((acc, item) => acc +price * item.quantity, 0).toFixed(2)}</Text>
                     {cart.map((c) => (
                         <HStack key={c.id} className='bg-gray-200 my-2 rounded-md p-2 items-center justify-between'>
                             <HStack className="gap-2 items-center">
                                 <Icon as={Plus} />
                                 <Text>{c.color} - {c.size} </Text>
                                 <Text>({c.quantity})</Text>
+                                <Text className="font-semibold">${(price * c.quantity).toFixed(2)}</Text>
 
                             </HStack>
                             <Button onPress={() => handleRemove(c.id)} variant='link' className='border border-gray-300 p-3 bg-gray-200 rounded-full'>
@@ -210,6 +239,7 @@ const ProductDetail = (product: ProductProps) => {
                     ))}
                 </VStack>
             )}
+            </>
             <Actionsheet isOpen={showActionsheet} onClose={handleClose}>
                 <ActionsheetBackdrop />
                 <ActionsheetContent>
@@ -256,8 +286,10 @@ const ProductDetail = (product: ProductProps) => {
                 </ActionsheetContent>
             </Actionsheet>
 
-
         </VStack>
+        </ScrollView>
+        <TapButton handleClick={handleAddToCart} />
+        </>
     )
 }
 

@@ -8,15 +8,15 @@ import { ChevronLeft } from "lucide-react-native";
 import React from "react";
 
 import CartSection from "@/components/CartSection";
+import TapButton from "@/components/TapButton";
 import { Pressable } from "@/components/ui/pressable";
 import { products } from "@/data";
-import { ScrollView } from "react-native";
 import ProductDetail from "@/features/product/components/ProductDetail";
-import TapButton from "@/components/TapButton";
+import { ScrollView } from "react-native";
 
 const Detail = () => {
   const router = useRouter();
-  const { id } = useLocalSearchParams()
+  const { id } = useLocalSearchParams();
   const product = products.find((product) => product.id === Number(id));
   return (
     <VStack className="flex-1">
@@ -36,19 +36,14 @@ const Detail = () => {
               </HStack>
             </Pressable>
           ),
-          headerRight: () => (
-            <VStack className="mr-4">
-              <CartSection />
-            </VStack>
-          ),
-
+          headerRight: () => <CartSection />,
         }}
       />
       <ViewPager />
-      <ScrollView showsVerticalScrollIndicator={false} className="bg-white flex-1">
-        {product && <ProductDetail {...product} />}
-      </ScrollView>
-      <TapButton />
+      
+      {product && <ProductDetail {...product} />}
+      
+      
     </VStack>
   );
 };

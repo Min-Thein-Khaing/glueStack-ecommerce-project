@@ -8,7 +8,6 @@ import { Text } from '@/components/ui/text'
 import { VStack } from '@/components/ui/vstack'
 
 import { Button, ButtonText } from '@/components/ui/button'
-import { Input, InputField } from '@/components/ui/input'
 
 import { Minus, Plus, Trash, TrashIcon } from 'lucide-react-native'
 
@@ -18,12 +17,12 @@ import { Fab } from '@/components/ui/fab'
 
 import {
   AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogFooter,
-  AlertDialogBody,
   AlertDialogBackdrop,
-} from '@/components/ui/alert-dialog';
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+} from '@/components/ui/alert-dialog'
 import { Box } from '@/components/ui/box'
 import { useCartStore } from '@/stores/useCartStore'
 
@@ -32,22 +31,20 @@ const blurhash =
 
 const Cart = () => {
   const [showAlertDialog, setShowAlertDialog] = useState(false);
-  const {carts, getTotalPrice} = useCartStore()
+  const { carts, clearAllCart, updateCart, removeCart } = useCartStore()
+  
+  const totalPrice = carts.reduce((total, cart) => {
+    return total + cart.items.reduce((itemTotal, item) => itemTotal + (cart.price * item.quantity), 0);
+  }, 0);
   const handleClose = () => setShowAlertDialog(false);
-  const handleDelete = (id: number) => {
-    Alert.alert(
-      "This action cannot be undone",
-      "Are you sure you want to delete all items?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete All", style: "destructive", onPress: () => {
-            console.log(id)
-          }
-        },
-      ]
-    )
+
+  const handleRemoveAll = () => {
+    clearAllCart()
+    setShowAlertDialog(false)
+
   }
+  
+
   return (
     <SafeAreaView className="flex-1 bg-white">
 
@@ -111,23 +108,27 @@ const Cart = () => {
                   {/* VARIANTS */}
                   <VStack className="gap-2 mt-2">
                     {cart.items.map((item, index) => (
+                      
                       <HStack
                         key={index}
                         className="justify-between items-center bg-gray-100 px-2 py-1 rounded-md"
                       >
-                        <Text className="text-xs font-medium text-gray-700">
+                        <Text className="text-xs font-medium text-gray-700 flex-1">
                           {item.color} - {item.size}
                         </Text>
 
-                        <Text className="text-xs font-bold">
-                          x {item.quantity}
-                        </Text>
+                        <HStack className='flex-1 items-center justify-center'>
+                          <Text className="text-xs font-bold">
+                            x {item.quantity}
+                          </Text>
+                        </HStack>
                         <HStack className="items-center gap-2">
 
                           <Button
                             variant="outline"
                             size="xs"
                             className="rounded-full w-8 h-8"
+                            onPress={() => item.quantity > 1 ? updateCart(cart.id, item.id, item.quantity - 1) : null}
                           >
                             <Icon as={Minus} size="xs" />
                           </Button>
@@ -138,11 +139,12 @@ const Cart = () => {
                             variant="outline"
                             size="xs"
                             className="rounded-full w-8 h-8"
+                            onPress={() => updateCart(cart.id, item.id, item.quantity + 1)}
                           >
                             <Icon as={Plus} size="xs" />
                           </Button>
                           <Button
-                          onPress={() => handleDelete(cart.id)}
+                            onPress={() => removeCart(cart.id, item.id)}
                             size="xs"
                             variant="link"
                             className="p-0"
@@ -172,7 +174,7 @@ const Cart = () => {
       <VStack className='bg-white  p-6 rounded-2xl  border mx-2 border-gray-100 shadow-md'>
         <HStack className='justify-between '>
           <Text className='text-gray-500'>Total</Text>
-          <Text className='font-bold text-gray-900'>${getTotalPrice().toFixed(2)}</Text>
+          <Text className='font-bold text-gray-900'>${totalPrice.toFixed(2)}</Text>
         </HStack>
 
 
@@ -219,9 +221,9 @@ const Cart = () => {
               <ButtonText>Cancel</ButtonText>
             </Button>
             <Button
+              onPress={handleRemoveAll}
               size="sm"
               action="negative"
-              onPress={handleClose}
               className="px-[30px]"
             >
               <ButtonText>Delete</ButtonText>
