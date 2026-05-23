@@ -3,3 +3,9 @@
 npx expo install @expo/ui
 npx expo install expo-dev-client
 npm run expo:ios
+
+
+//phone nyo instructor
+library react native otp 
+
+npm i react-native-otp-entry

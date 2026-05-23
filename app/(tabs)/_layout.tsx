@@ -5,17 +5,17 @@ import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useSession } from '@/providers/ctx';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const { session, isLoading } = useSession();
+  const { isLoggIn, _hasHydrated } = useAuthStore();
 
-  if (isLoading) {
+  if (!_hasHydrated) {
     return null;
   }
 
-  if (!session) {
+  if (!isLoggIn) {
     return <Redirect href="/login" />;
   }
 

@@ -1,15 +1,16 @@
 import { Pressable, Text, View } from "react-native";
 
-import { useSession } from "@/providers/ctx";
-import { Tabs } from "expo-router";
+// import { useSession } from "@/providers/ctx";
+// import { Tabs } from "expo-router";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 export default function Profile() {
-  const { signOut } = useSession();
+  const { signOut } = useAuthStore();
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Tabs.Screen options={{ title: "My Profile", headerShown: false }} />
+      {/* <Tabs.Screen options={{ title: "My Profile", headerShown: false }} /> */}
       <Pressable
-        onPress={signOut}
+        onPress={()=>signOut()}
         style={({ pressed }) => ({
           backgroundColor: pressed ? "#0a7ea4" : "#1f97d4",
           padding: 12,

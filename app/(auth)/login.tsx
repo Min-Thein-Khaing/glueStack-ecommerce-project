@@ -1,14 +1,13 @@
-import { Redirect, router, Stack } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { Link, Redirect, router, Stack, useRouter } from "expo-router";
+import { useState } from "react";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
-import { useSession } from "@/providers/ctx";
 
 export default function LogIn() {
-  const { signIn, session } = useSession();
+  const { signIn, isLoggIn } = useAuthStore();
 
-  if (session) {
-    return <Redirect href="/" />;
-  }
+
 
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -16,7 +15,6 @@ export default function LogIn() {
       <Pressable
         onPress={() => {
           signIn();
-          router.replace("/");
         }}
         style={({ pressed }) => ({
           backgroundColor: pressed ? "#0a7ea4" : "#1f97d4",
@@ -27,6 +25,8 @@ export default function LogIn() {
         <Text style={{ color: "#1e1515ff", fontSize: 16, fontWeight: "bold" }}>
           Sign In
         </Text>
+        <Link href="/register"><Text>Register</Text></Link>
+
       </Pressable>
     </View>
   );
