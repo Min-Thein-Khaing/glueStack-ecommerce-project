@@ -1,36 +1,42 @@
-import { Heading } from "@/components/ui/heading";
-import { HStack } from "@/components/ui/hstack";
-import { Text } from "@/components/ui/text";
-import { VStack } from "@/components/ui/vstack";
-import { useAuthStore } from "@/stores/useAuthStore";
-import { Image } from "expo-image";
-import { ScrollView, TextInput } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useAppToast } from "@/components/Toast";
+import { Button, ButtonText } from "@/components/ui/button";
+import { Divider } from "@/components/ui/divider";
 import {
   FormControl,
-  FormControlLabel,
   FormControlError,
-  FormControlErrorText,
   FormControlErrorIcon,
+  FormControlErrorText,
   FormControlHelper,
   FormControlHelperText,
+  FormControlLabel,
   FormControlLabelText,
 } from "@/components/ui/form-control";
-import { AlertCircleIcon, Icon } from "@/components/ui/icon";
+import { Heading } from "@/components/ui/heading";
+import { HStack } from "@/components/ui/hstack";
+import { AlertCircleIcon } from "@/components/ui/icon";
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
-import { useForm, Controller } from "react-hook-form";
+import { Text } from "@/components/ui/text";
+import { VStack } from "@/components/ui/vstack";
+import { loginPost } from "@/services/auth";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { Image } from "expo-image";
+import { Link } from "expo-router";
+import { router } from "expo-router";
 import { Eye, EyeClosed } from "lucide-react-native";
 import React from "react";
-import { Pressable } from "@/components/ui/pressable";
-import { Divider } from "@/components/ui/divider";
-import { router } from "expo-router";
-import { Button, ButtonText } from "@/components/ui/button";
+import { Controller, useForm } from "react-hook-form";
+import { ActivityIndicator, ScrollView } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
 export default function LogIn() {
   const { signIn, isLoggIn } = useAuthStore();
   const [showPass, setShowPass] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+
+  //for toast
+  const { handleToast } = useAppToast()
   const {
     control,
     handleSubmit,
@@ -41,9 +47,21 @@ export default function LogIn() {
       password: "",
     },
   });
-  const onSubmit = () => {
-    console.log("submit");
-    console.log(control);
+  const onSubmit = async (data: { phone: string; password: string }) => {
+    try {
+      setLoading(true);
+      const res = await loginPost(data);
+      const { refreshToken, randToken, token } = res;
+      signIn({ accessToken: token, refreshToken, randomToken: randToken });
+      handleToast({ title: "Success", description: res.message, successError: true })
+
+    } catch (error: any) {
+      if (error) {
+        handleToast({ title: "Fail", description: error.response.data.message, successError: false })
+      }
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <SafeAreaView className="flex-1 px-4 bg-white">
@@ -77,9 +95,9 @@ export default function LogIn() {
               className="gap-2"
               //isInvalid={isInvalid}
               size="md"
-              // isDisabled={false}
-              // isReadOnly={false}
-              // isRequired={false}
+            // isDisabled={false}
+            // isReadOnly={false}
+            // isRequired={false}
             >
               <VStack className="gap-1">
                 <FormControlLabel>
@@ -91,7 +109,22 @@ export default function LogIn() {
                   control={control}
                   name="phone"
                   rules={{
-                    required: true,
+                    required: {
+                      value: true,
+                      message: "Phone number is required.",
+                    },
+                    minLength: {
+                      value: 7,
+                      message: "Phone number must be at least 7 digits.",
+                    },
+                    maxLength: {
+                      value: 12,
+                      message: "Phone number must be at most 12 digits.",
+                    },
+                    pattern: {
+                      value: /^\+?\d{7,12}$/,
+                      message: "Invalid phone number format.",
+                    },
                   }}
                   render={({ field: { onChange, onBlur, value } }) => (
                     <Input
@@ -104,20 +137,14 @@ export default function LogIn() {
                         value={value}
                         onBlur={onBlur}
                         onChangeText={onChange}
+                        inputMode="numeric"
+                        maxLength={12}
                       />
                     </Input>
                   )}
                 />
                 {errors.phone && (
-                  <FormControlError>
-                    <FormControlErrorIcon
-                      as={AlertCircleIcon}
-                      className="text-red-500"
-                    />
-                    <FormControlErrorText className="text-red-500">
-                      Phone number is required.
-                    </FormControlErrorText>
-                  </FormControlError>
+                  <Text className={"text-red-500"}>{errors.phone.message}</Text>
                 )}
               </VStack>
               {/* <FormControlHelper>
@@ -143,7 +170,18 @@ export default function LogIn() {
                   control={control}
                   name="password"
                   rules={{
-                    required: true,
+                    required: {
+                      value: true,
+                      message: "Password is required.",
+                    },
+                    minLength: {
+                      value: 8,
+                      message: "Password must be at least 8 characters.",
+                    },
+                    // pattern: {
+                    //   value: /^(?=.*[a-zA-Z])(?=.*\d)/,
+                    //   message: "Password must contain letters and numbers.",
+                    // },
                   }}
                   render={({ field: { onChange, onBlur, value } }) => (
                     <Input
@@ -154,6 +192,7 @@ export default function LogIn() {
                         type={showPass ? "text" : "password"}
                         placeholder="********"
                         value={value}
+                        onBlur={onBlur}
                         onChangeText={onChange}
                       />
 
@@ -168,15 +207,9 @@ export default function LogIn() {
                   )}
                 />
                 {errors.password && (
-                  <FormControlError>
-                    <FormControlErrorIcon
-                      as={AlertCircleIcon}
-                      className="text-red-500"
-                    />
-                    <FormControlErrorText className="text-red-500">
-                      Password is required.
-                    </FormControlErrorText>
-                  </FormControlError>
+                  <Text className={"text-red-500"}>
+                    {errors.password.message}
+                  </Text>
                 )}
 
                 <FormControlHelper>
@@ -191,18 +224,21 @@ export default function LogIn() {
             Forget Password
           </Text>
           <VStack className="mt-2 gap-4">
-            <Button className="bg-blue-600 h-14 rounded-lg justify-center items-center">
+            <Button
+              onPress={handleSubmit(onSubmit)}
+              className="bg-blue-600 h-14 rounded-lg justify-center items-center"
+            >
               <ButtonText className="text-white text-lg font-semibold">
-                Sign In
+                {loading ? <ActivityIndicator color={'white'} /> : "Sign In"}
               </ButtonText>
             </Button>
             <Divider />
             <Text className="text-center font-medium">Create account ?</Text>
             <Button
               onPress={() => router.push("/register")}
-              className="bg-blue-400  h-14 rounded-lg justify-center items-center"
+              className="bg-blue-400 h-14 rounded-lg justify-center items-center"
             >
-              <ButtonText className="text-white text-lg font-semibold" >
+              <ButtonText className="text-white text-lg font-semibold">
                 Register
               </ButtonText>
             </Button>
@@ -212,3 +248,4 @@ export default function LogIn() {
     </SafeAreaView>
   );
 }
+

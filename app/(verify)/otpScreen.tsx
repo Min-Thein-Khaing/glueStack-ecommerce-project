@@ -12,14 +12,24 @@ import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { FormatSecond } from '@/utils/FormatSecondToMinSe';
 import { usePreventRemove } from '@react-navigation/native';
+import { Heading } from '@/components/ui/heading';
+import { ScrollView } from 'react-native';
+import { Image } from 'expo-image';
+import { Link } from 'expo-router';
+import { verifyOTPPost } from '@/services/auth';
+import { useAppToast } from '@/components/Toast';
+
+const blurhash =
+  "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
 
 const OTP_DURATION_MS = 90 * 1000; // 90 seconds
 
 const OtpScreen = () => {
 
   const router = useRouter();
+  const [isSubmiting, setIsSubmitting] = useState<boolean>(false);
 
-  const { setPasswordScreen } = useAuthStore();
+  const { setPasswordScreen, phone, token } = useAuthStore();
 
 
 
@@ -38,19 +48,32 @@ const OtpScreen = () => {
     )
   );
 
-
+  const { handleToast } = useAppToast();
 
   // verify otp
-  const handleOtp = (otp: string) => {
+  const handleOtp = async (otp: string) => {
+    setIsSubmitting(true);
+    try {
 
-    console.log('OTP => ', otp);
+      const res: any = await verifyOTPPost({
+        phone: phone as string,
+        otp: otp,
+        token: token as string
+      });
+      setPasswordScreen({ token: res.token });
 
-    // verify otp api here
+      router.navigate('/password');
+      handleToast({ title: "Success", description: res.message, successError: true })
 
-    setPasswordScreen();
 
-    router.navigate('/password');
-
+    } catch (error: any) {
+      if (error) {
+        const errorMessage = typeof error === 'string' ? error : (error?.response?.data?.message || error?.message || "Something went wrong");
+        handleToast({ title: "Fail", description: errorMessage, successError: false })
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
 
@@ -81,7 +104,7 @@ const OtpScreen = () => {
         style: 'default',
       },
       {
-        
+
       }
 
     ]
@@ -90,7 +113,6 @@ const OtpScreen = () => {
   // resend otp
   const handleResendOtp = () => {
 
-    console.log('Resend OTP');
 
     // resend otp api here
 
@@ -107,28 +129,42 @@ const OtpScreen = () => {
 
 
   return (
-    <SafeAreaView className="flex-1 items-center justify-center px-4">
+    <SafeAreaView className="flex-1 px-4 bg-white">
 
-      <VStack className="items-center gap-4">
-
-        <Text className="text-2xl font-bold">
-          Verify OTP
+      <HStack className="justify-end items-center  mt-2 gap-2">
+        <Image
+          style={{
+            width: 20,
+            height: 20,
+            borderRadius: 10,
+            borderWidth: 1,
+            paddingVertical: 2,
+            paddingHorizontal: 2,
+          }}
+          source={require("@/assets/images/n.png")}
+          placeholder={{ blurhash }}
+          contentFit="cover"
+          transition={1000}
+        />
+        <Text className="text-xl font-bold"> Store fashion</Text>
+      </HStack>
+      <VStack className=" gap-2">
+        <Heading size="xl" className="leading-snug text-purple-400">
+          Verify OTP {"\n"}To Continuous Registeration
+        </Heading>
+        <Text className="text-md text-gray-500 font-semibold">
+          we sent a SMS OTP To your phone number
         </Text>
-
-        <Text className="text-gray-500">
-          Enter your 6-digit code
-        </Text>
-
-
 
         <HStack className="w-[90%] md:w-[30%] mt-3">
 
           <OtpInput
             numberOfDigits={6}
             type="numeric"
-            focusColor="green"
+            focusColor="purple"
             placeholder="******"
             onFilled={handleOtp}
+            disabled={isSubmiting}
           />
 
         </HStack>

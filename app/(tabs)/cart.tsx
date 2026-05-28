@@ -171,29 +171,31 @@ const Cart = () => {
       </ScrollView>
 
       {/* TOTAL */}
-      <VStack className='bg-white  p-6 rounded-2xl  border mx-2 border-gray-100 shadow-md'>
-        <HStack className='justify-between '>
-          <Text className='text-gray-500'>Total</Text>
-          <Text className='font-bold text-gray-900'>${totalPrice.toFixed(2)}</Text>
-        </HStack>
-
-
-        <Button className='my-3'>
-          <Text className='text-white font-bold'>CheckOut</Text>
-        </Button>
-      </VStack>
-      <Fab
-        // onPress={handleDeleteAll}
-        onPress={() => setShowAlertDialog(true)}
-        size="sm"
-        placement="bottom right"
-        isHovered={false}
-        isDisabled={false}
-        isPressed={false}
-        className=' bg-transparent bg-gray-200 mb-32'
-      >
-        <Icon as={Trash} className=' text-red-500' />
-      </Fab>
+        {carts.length > 0 ? (
+          <>
+            <VStack className='bg-white  p-6 rounded-2xl  border mx-2 border-gray-100 shadow-md'>
+              <HStack className='justify-between '>
+                <Text className='text-gray-500'>Total</Text>
+                <Text className='font-bold text-gray-900'>${totalPrice.toFixed(2)}</Text>
+              </HStack>
+              <Button className='my-3'>
+                <Text className='text-white font-bold'>CheckOut</Text>
+              </Button>
+            </VStack>
+            <Fab
+              onPress={() => setShowAlertDialog(true)}
+              size="sm"
+              placement="bottom right"
+              isHovered={false}
+              isDisabled={false}
+              isPressed={false}
+              className='bg-transparent bg-gray-200 mb-32'
+            >
+              <Icon as={Trash} className='text-red-500' />
+            </Fab>
+          </>
+        ) : null}
+      
       <AlertDialog isOpen={showAlertDialog} onClose={handleClose} className='px-5'>
         <AlertDialogBackdrop />
         <AlertDialogContent className="w-full max-w-[415px] gap-4 items-center">
