@@ -35,9 +35,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
-        const originalRequest = error.config//ပျက်စီးသွားတဲ့ မူလ Request (ဥပမာ- /profile ခေါ်တာ)
+        const originalRequest = error.config//ပျက်စီးသွားတဲ့ မူလ Request ခဏ မှတ်ထားလိုက်တာပါ။ (ဥပမာ- /profile ခေါ်တာ)
         const status = error.response?.status
         if (status === 401 && !originalRequest._retry) {
+            /* multiple request manage */
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
                     failedRequestQueue.push({
@@ -46,7 +47,7 @@ api.interceptors.response.use(
                     })
                 })
             }
-            
+            /* that is single request manage */
             isRefreshing = true
             originalRequest._retry = true
             const { refreshToken, accessToken, randomToken, setAccessToken, signOut } = useAuthStore.getState()
