@@ -35,9 +35,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
-        const originalRequest = error.config//ပျက်စီးသွားတဲ့ မူလ Request ခဏ မှတ်ထားလိုက်တာပါ။ (ဥပမာ- /profile ခေါ်တာ)
+        const originalRequest = error.config
         const status = error.response?.status
-        if (status === 401 && !originalRequest._retry) {
+
+        if (status === 401  && !originalRequest._retry) {
             /* multiple request manage */
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
@@ -65,7 +66,7 @@ api.interceptors.response.use(
                         }
                     }
                 )
-                
+
                 setAccessToken({ accessToken: res.data.token, refreshToken: res.data.refreshToken, randomToken: res.data.randToken })
 
                 originalRequest.headers.Authorization = `Bearer ${res.data.token}`
@@ -79,12 +80,14 @@ api.interceptors.response.use(
                 signOut()
                 failedRequestQueue.forEach(request => request.reject(error))
                 failedRequestQueue = []
+                // console.log("REJECTING ERROR (401):", error)
                 return Promise.reject(error)
             } finally {
                 isRefreshing = false
             }
         }
-        
-        return Promise.reject(error)
+
+        // console.log("REJECTING ERROR:", error?.message)
+        throw error  // Use throw instead of return Promise.reject
     }
 )

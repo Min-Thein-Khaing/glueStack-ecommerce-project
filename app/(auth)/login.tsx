@@ -56,9 +56,8 @@ export default function LogIn() {
       handleToast({ title: "Success", description: res.message, successError: true })
 
     } catch (error: any) {
-      if (error) {
-        handleToast({ title: "Fail", description: error.response.data.message, successError: false })
-      }
+        const errorMessage = error?.message || error?.response?.data?.message || 'Login failed'
+        handleToast({ title: "Fail", description: errorMessage, successError: false })
     } finally {
       setLoading(false);
     }

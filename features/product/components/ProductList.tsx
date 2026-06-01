@@ -33,7 +33,7 @@ const ProductList = ({
       <Card className="p-2">
         <Image
           style={{ width: "100%", aspectRatio: 3 / 4, borderRadius: 5 }}
-          source={image}
+          source={{ uri: `${process.env.EXPO_PUBLIC_IMAGE_URL}${image}` }}
           placeholder={{ blurhash }}
           contentFit="cover"
           transition={1000}

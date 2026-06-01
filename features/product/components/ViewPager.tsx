@@ -3,7 +3,6 @@ import React from "react";
 import { StyleSheet, View, Dimensions, Animated } from "react-native";
 import type { PagerViewOnPageScrollEventData } from "react-native-pager-view";
 import PagerView from "react-native-pager-view";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 const p1 = require("@/data/shop/pager1.png");
 const p2 = require("@/data/shop/pager2.png");
