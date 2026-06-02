@@ -2,12 +2,15 @@
 
 import {create} from 'zustand';
 
-type CategoryIdState ={
+type CategoryIdState = {
   categoryId: number | null;
   setCategoryId: (id: number) => void;
-}
+};
 
 export const useCategoryId = create<CategoryIdState>((set) => ({
   categoryId: null,
-  setCategoryId: (id: number) => set({ categoryId: id }),
+  setCategoryId: (id: number) =>
+    set((state) =>
+      state.categoryId === id ? state : { categoryId: id }
+    ),
 }));

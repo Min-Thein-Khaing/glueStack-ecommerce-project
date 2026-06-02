@@ -10,7 +10,7 @@ type TitleProps = {
 
 const Title = ({ title, btnTitle }: TitleProps) => {
     return (
-        <HStack className="justify-between items-center px-4 mt-3 ">
+        <HStack className="justify-between items-center px-4 ">
             <Text className=" text-md font-[500] tracking-[1px] text-[#151111]">
                 {title}
             </Text>

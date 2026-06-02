@@ -14,6 +14,7 @@ import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input'
 import { Eye, EyeClosed } from 'lucide-react-native'
 import { Divider } from '@/components/ui/divider'
 import { router } from 'expo-router'
+import { parseAuthTokens } from '@/api/authTokens'
 import { passwordConfirm } from '@/services/auth'
 import { useAppToast } from '@/components/Toast'
 
@@ -47,11 +48,11 @@ const Password = () => {
         password: data.password,
         token: token as string,
       })
-      signIn({
-        accessToken: res.token,
-        refreshToken: res.refreshToken,
-        randomToken: res.randomToken,
-      })
+      const tokens = parseAuthTokens(res)
+      if (!tokens) {
+        throw new Error('Registration response missing tokens')
+      }
+      signIn(tokens)
       handleToast({ title: "Success", description: res.message, successError: true })
 
     } catch (error: any) {

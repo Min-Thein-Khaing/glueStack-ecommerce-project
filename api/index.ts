@@ -80,14 +80,12 @@ api.interceptors.response.use(
                 signOut()
                 failedRequestQueue.forEach(request => request.reject(error))
                 failedRequestQueue = []
-                // console.log("REJECTING ERROR (401):", error)
                 return Promise.reject(error)
             } finally {
                 isRefreshing = false
             }
         }
 
-        // console.log("REJECTING ERROR:", error?.message)
-        throw error  // Use throw instead of return Promise.reject
+        throw error
     }
 )

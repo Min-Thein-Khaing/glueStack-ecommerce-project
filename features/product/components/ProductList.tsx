@@ -30,7 +30,7 @@ const ProductList = ({
   const router = useRouter();
   return (
     <Pressable onPress={() => router.navigate({pathname:"/detail",params:{id:id}})}>
-      <Card className="p-2">
+      <Card className="mx-2">
         <Image
           style={{ width: "100%", aspectRatio: 3 / 4, borderRadius: 5 }}
           source={{ uri: `${process.env.EXPO_PUBLIC_IMAGE_URL}${image}` }}

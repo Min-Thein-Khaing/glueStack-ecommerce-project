@@ -17,6 +17,7 @@ import { AlertCircleIcon } from "@/components/ui/icon";
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { parseAuthTokens } from "@/api/authTokens";
 import { loginPost } from "@/services/auth";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Image } from "expo-image";
@@ -51,8 +52,11 @@ export default function LogIn() {
     try {
       setLoading(true);
       const res = await loginPost(data);
-      const { refreshToken, randToken, token } = res;
-      signIn({ accessToken: token, refreshToken, randomToken: randToken });
+      const tokens = parseAuthTokens(res);
+      if (!tokens) {
+        throw new Error("Login response missing tokens");
+      }
+      signIn(tokens);
       handleToast({ title: "Success", description: res.message, successError: true })
 
     } catch (error: any) {

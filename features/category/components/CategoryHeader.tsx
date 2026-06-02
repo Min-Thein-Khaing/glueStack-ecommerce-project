@@ -5,19 +5,14 @@ import { HStack } from "@/components/ui/hstack";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { useCategoryId } from "@/stores/useCategoryId";
 import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import CategoryList, { CategoryProps } from "./CategoryList";
-import ProductSection from "@/features/product/components/ProductSection";
-import { useCategoryId } from "@/stores/useCategoryId";
-
 
 const CategoryHeader = () => {
-  const [selectedId, setSelectedId] = useState(0);
-
-
-    const {setCategoryId} = useCategoryId()
+  const { categoryId, setCategoryId } = useCategoryId();
   const {
     data: categories,
     isError,
@@ -27,14 +22,18 @@ const CategoryHeader = () => {
   } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
-    // retry:7 // that is overwrite is using default 5 time you in _mainLayout
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60 * 24,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
-  useEffect(()=>{
-    if(categories && categories.length > 0){
-      setSelectedId(categories[0].id)
+  useEffect(() => {
+    if (categories?.length && categoryId === null) {
+      setCategoryId(categories[0].id);
     }
-  },[categories])
+  }, [categories, categoryId, setCategoryId]);
 
   if (isError) {
     return (
@@ -54,13 +53,13 @@ const CategoryHeader = () => {
       </VStack>
     );
   }
-  
+
   const handlePress = (id: number) => {
-    setSelectedId(id);
+    if (id === categoryId) return;
     setCategoryId(id);
   };
   return (
-    <VStack className=" mt-2 ">
+    <VStack className=" mt-4 ">
       <Title title="Shop by Category" btnTitle="See more" />
       {isPending ? (
         <HStack>
@@ -78,18 +77,16 @@ const CategoryHeader = () => {
           renderItem={({ item }) => (
             <CategoryList
               {...item}
-              isSelected={item.id === selectedId}
+              isSelected={item.id === categoryId}
               onPress={handlePress}
             />
           )}
           horizontal
           showsHorizontalScrollIndicator={false}
-          extraData={selectedId}
-          estimatedItemSize={80}
+          extraData={categoryId}
           contentContainerStyle={{ paddingHorizontal: 5, marginVertical: 5 }}
         />
       )}
-      <ProductSection categoryId={selectedId} />
     </VStack>
   );
 };

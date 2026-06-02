@@ -1,15 +1,16 @@
-
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { fetchProducts } from '@/api/fetch';
 import { ProductProps } from '@/types/ProductType';
+import { useCategoryId } from '@/stores/useCategoryId';
 
 
 
-const useProductHook = (categoryId: number) => {
-
+const useProductHook = () => {
+  const {categoryId} = useCategoryId()
     const {
     data,
     isPending,
+    isFetching,
     isError,
     error,
     isFetchingNextPage,
@@ -22,18 +23,21 @@ const useProductHook = (categoryId: number) => {
       fetchProducts(2, categoryId, pageParam),
     initialPageParam: 0,
     getNextPageParam: (lastPage: any) => lastPage?.nextCursor,
-    // --- ဒီအပိုင်းလေးတွေ ထည့်ပေးပါ ---
-    staleTime: 1000 * 60 * 15, // ၅ မိနစ်အတွင်း ဒီ category ကို ပြန်ခေါ်ရင် cache ထဲကပဲ ယူမယ်၊ API ထပ်မခေါ်ဘူး
-    // gcTime: 1000 * 60 * 10, // 10 minutes cache duration for garbage collection
-
-    enabled: !!categoryId
+    enabled: !!categoryId,
+    // Each category: fetch once, then use cache (Men, Women, Teens & Kids, …)
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60 * 24,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
-  const allProducts = data?.pages.flatMap((page:any) => page.products) || [];
-  
+  const allProducts =
+    data?.pages.flatMap((page: any) => page.products) ?? [];
   
   return {
     allProducts,
     isPending,
+    isFetching,
     isError,
     error,
     isFetchingNextPage,

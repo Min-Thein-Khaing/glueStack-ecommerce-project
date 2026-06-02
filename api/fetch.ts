@@ -11,7 +11,7 @@ export const fetchCategories = async () => {
 };
 
 
-export const fetchProducts = async (limit: number, category: number, pageParam?: number) => {
+export const fetchProducts = async (limit: number, category: number | null, pageParam?: number) => {
     try {
         console.log("fetch product",category , pageParam)
         const url = pageParam
