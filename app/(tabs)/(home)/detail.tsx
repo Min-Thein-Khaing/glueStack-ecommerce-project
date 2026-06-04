@@ -10,14 +10,22 @@ import React from "react";
 import CartSection from "@/components/CartSection";
 import TapButton from "@/components/TapButton";
 import { Pressable } from "@/components/ui/pressable";
-import { products } from "@/data";
 import ProductDetail from "@/features/product/components/ProductDetail";
 import { ScrollView } from "react-native";
+import { fetchProductDetail } from "@/api/fetch";
+import { useQuery } from "@tanstack/react-query";
 
 const Detail = () => {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const product = products.find((product) => product.id === Number(id));
+
+  const {data:product ,refetch,isPending,isError} = useQuery({
+          queryKey:["product", id],
+          queryFn:() => fetchProductDetail(+id),
+          
+      })
+
+
   return (
     <VStack className="flex-1">
       <Stack.Screen
@@ -41,7 +49,7 @@ const Detail = () => {
       />
       <ViewPager />
       
-      {product && <ProductDetail {...product} />}
+      {product && <ProductDetail {...product}  />}
       
       
     </VStack>

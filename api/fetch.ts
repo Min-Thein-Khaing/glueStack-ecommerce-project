@@ -1,3 +1,4 @@
+import { ProductProps } from "@/types/ProductType";
 import { api } from "./index";
 
 export const fetchCategories = async () => {
@@ -39,4 +40,13 @@ export const fetchToggleProductFavourite = async ({productId,favourite}:{product
         console.log("Fetch error:", error?.message)
         throw new Error(error?.message || "Failed to toggle product favourite");
     }
+}
+export const fetchProductDetail = async (productId:number):Promise<ProductProps> => {
+  try {
+    const res = await api.get(`users/products/${productId}`);
+    return res.data;
+  } catch (error: any) {
+    console.log("Fetch error:", error?.message);
+    throw new Error(error?.message || "Failed to load product detail");
+  }
 }

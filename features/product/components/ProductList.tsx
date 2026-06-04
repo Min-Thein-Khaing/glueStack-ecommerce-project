@@ -77,7 +77,7 @@ const {categoryId} = useCategoryId()
         context?.previousProducts,
       )
     },
-    onSettled:() => queryClient.invalidateQueries({queryKey:["products", categoryId]})
+    // onSettled:() => queryClient.invalidateQueries({queryKey:["products", categoryId]})
   })
 
   const handleToggleFavourite = (productId:number,favourite:boolean) => {
