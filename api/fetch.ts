@@ -33,7 +33,7 @@ export const fetchToggleProductFavourite = async ({productId,favourite}:{product
         const res = await api.patch(`users/products/favourite-toggle`,{
           productId,favourite
         })
-        await new Promise((resolve)=> setTimeout(resolve,3000))
+        // await new Promise((resolve)=> setTimeout(resolve,3000))
         return res.data;
     } catch (error: any) {
         console.log("Fetch error:", error?.message)

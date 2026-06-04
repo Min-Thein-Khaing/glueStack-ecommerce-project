@@ -52,7 +52,7 @@ const {categoryId} = useCategoryId()
           return oldData
         }
         return {...oldData,
-          pages:oldData.pages.map((page) => ({
+          pages:oldData.pages.map((page:any) => ({
             ...page,
             products:page.products.map((product:any) => {
               if(productId === product.id){
@@ -74,7 +74,7 @@ const {categoryId} = useCategoryId()
       const queryKey = ["products", categoryId] 
       queryClient.setQueryData(
         queryKey,
-        context.previousProducts,
+        context?.previousProducts,
       )
     },
     onSettled:() => queryClient.invalidateQueries({queryKey:["products", categoryId]})
