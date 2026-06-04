@@ -8,8 +8,10 @@ import { VStack } from "@/components/ui/vstack";
 import { useCategoryId } from "@/stores/useCategoryId";
 import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import CategoryList, { CategoryProps } from "./CategoryList";
+import { useFocusEffect } from "@react-navigation/native";
+import { useEffectFocus } from "@/hooks/useFocusEffect";
 
 const CategoryHeader = () => {
   const { categoryId, setCategoryId } = useCategoryId();
@@ -22,7 +24,7 @@ const CategoryHeader = () => {
   } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
-    staleTime: Infinity,
+    staleTime: 1000 * 60 * 15,// 15 minutes
     gcTime: 1000 * 60 * 60 * 24,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
@@ -34,6 +36,8 @@ const CategoryHeader = () => {
       setCategoryId(categories[0].id);
     }
   }, [categories, categoryId, setCategoryId]);
+
+  useEffectFocus(refetch);
 
   if (isError) {
     return (

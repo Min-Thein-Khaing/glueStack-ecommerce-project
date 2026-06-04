@@ -7,25 +7,27 @@ import { Text } from "@/components/ui/text";
 import {
   ActivityIndicator,
   Dimensions,
+  NativeSyntheticEvent,
   RefreshControl,
 } from "react-native";
 import { HStack } from "@/components/ui/hstack";
 import useProductHook from "../hooks/useProductHook";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Icon } from "@/components/ui/icon";
-import { BaggageClaim } from "lucide-react-native";
+import { ArrowUp, BaggageClaim } from "lucide-react-native";
 import useRefreshByUser from "@/hooks/useRefreshByUser";
 import ProductHeader from "./ProductHeader";
 import CategoryHeader from "@/features/category/components/CategoryHeader";
 import Title from "@/components/Title";
-
+import { Fab, FabIcon } from "@/components/ui/fab";
+import { useRef, useState } from "react";
+import { NativeScrollEvent } from "react-native";
+import { useMutation } from "@tanstack/react-query";
+import { fetchToggleProductFavourite } from "@/api/fetch";
 const ProductSkeletonGrid = () => (
   <HStack className="flex-wrap justify-between px-4 gap-y-4 pt-4">
     {Array.from({ length: 8 }).map((_, index) => (
-      <Skeleton
-        key={index}
-        className="h-56 w-[48%] md:w-[23%] rounded-lg"
-      />
+      <Skeleton key={index} className="h-56 w-[48%] md:w-[23%] rounded-lg" />
     ))}
   </HStack>
 );
@@ -45,9 +47,24 @@ const ProductSection = () => {
   } = useProductHook();
 
   const { refreshing, onRefresh } = useRefreshByUser(refetchProducts);
+  const scrollRef =
+    useRef<React.ElementRef<typeof FlashList<ProductProps>>>(null);
+  const [showFab, setShowFab] = useState(false);
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const yOffset = event.nativeEvent.contentOffset.y;
+    if (yOffset > 300) {
+       setShowFab(true); // Show if scrolled past 300px
+    } else {
+      setShowFab(false); // Hide if near the top
+    }
+  };
+
+  const handleTop = () => {
+    scrollRef.current?.scrollToOffset({ offset: 0, animated: true });
+  };
 
   const isFirstLoadForCategory = isPending && allProducts.length === 0;
-
+  
   const listHeader = (
     <>
       <ProductHeader />
@@ -100,26 +117,43 @@ const ProductSection = () => {
   };
 
   return (
-    <FlashList
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-      ListHeaderComponent={listHeader}
-      ListEmptyComponent={listEmpty}
-      contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 0 }}
-      data={isFirstLoadForCategory ? [] : (allProducts as ProductProps[])}
-      numColumns={numCol}
-      keyExtractor={(item) => item.id.toString()}
-      renderItem={({ item }) => <ProductList {...item} />}
-      onEndReachedThreshold={0.3}
-      onEndReached={() => {
-        if (hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
+    <>
+      <FlashList
+        ref={scrollRef}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-      }}
-      showsVerticalScrollIndicator={false}
-      ListFooterComponent={listFooter}
-    />
+        ListHeaderComponent={listHeader}
+        ListEmptyComponent={listEmpty}
+        contentContainerStyle={{ paddingHorizontal: 0, paddingBottom: 0 }}
+        data={isFirstLoadForCategory ? [] : (allProducts as ProductProps[])}
+        numColumns={numCol}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => <ProductList {...item} />}
+        onEndReachedThreshold={0.3}
+        onEndReached={() => {
+          if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+          }
+        }}
+        showsVerticalScrollIndicator={false}
+        ListFooterComponent={listFooter}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      />
+      {showFab && (
+        <Fab
+          onPress={handleTop}
+          size="sm"
+          placement="bottom right"
+          isHovered={false}
+          isDisabled={false}
+          isPressed={false}
+        >
+          <FabIcon as={ArrowUp} />
+        </Fab>
+      )}
+    </>
   );
 };
 

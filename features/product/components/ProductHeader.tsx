@@ -1,4 +1,3 @@
-import Title from '@/components/Title'
 import { VStack } from '@/components/ui/vstack'
 import Banner from '@/features/nav/components/Banner'
 import React from 'react'

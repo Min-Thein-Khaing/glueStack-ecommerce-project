@@ -25,11 +25,9 @@ const useProductHook = () => {
     getNextPageParam: (lastPage: any) => lastPage?.nextCursor,
     enabled: !!categoryId,
     // Each category: fetch once, then use cache (Men, Women, Teens & Kids, …)
-    staleTime: Infinity,
-    gcTime: 1000 * 60 * 60 * 24,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    staleTime: 5 * 60 * 1000, // 5 minutesr
+    // gcTime: 1000 * 60 * 60 * 24,
+    gcTime:  10 * 60 * 1000 ,
   });
   const allProducts =
     data?.pages.flatMap((page: any) => page.products) ?? [];

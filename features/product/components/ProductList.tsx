@@ -9,6 +9,9 @@ import { Icon } from "@/components/ui/icon";
 import { Heart,Star } from "lucide-react-native";
 import { HStack } from "@/components/ui/hstack";
 import { useRouter } from "expo-router";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchToggleProductFavourite } from "@/api/fetch";
+import { useCategoryId } from "@/stores/useCategoryId";
 
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
@@ -28,6 +31,59 @@ const ProductList = ({
   description,
 }: ProductProps) => {
   const router = useRouter();
+const {categoryId} = useCategoryId()
+   //mutate load chin yin 
+  const queryClient = useQueryClient()
+ const {data ,mutate } = useMutation({
+    mutationFn: fetchToggleProductFavourite,
+    //for optimistic cache
+    onMutate:async({productId,favourite}) => {
+      // Cancel any outgoing refetches
+     // (so they don't overwrite our optimistic update)
+     await queryClient.cancelQueries({ queryKey: ["products", categoryId] })
+
+     // Snapshot the previous value
+    const previousProducts = queryClient.getQueryData(["products", categoryId])
+    
+    // Optimistically update to the new value
+      queryClient.setQueryData(["products", categoryId] , (oldData:any) => {
+
+        if(!oldData){
+          return oldData
+        }
+        return {...oldData,
+          pages:oldData.pages.map((page) => ({
+            ...page,
+            products:page.products.map((product:any) => {
+              if(productId === product.id){
+               return {
+                  ...product,
+                  users: favourite ? [{id:1}] :[]
+               }
+               
+              }
+              return product;
+            })
+          }))
+        }
+      })
+      return {previousProducts};
+    },
+    
+    onError: (err, variable, context) => {
+      const queryKey = ["products", categoryId] 
+      queryClient.setQueryData(
+        queryKey,
+        context.previousProducts,
+      )
+    },
+    onSettled:() => queryClient.invalidateQueries({queryKey:["products", categoryId]})
+  })
+
+  const handleToggleFavourite = (productId:number,favourite:boolean) => {
+    mutate({productId,favourite})
+  }
+ 
   return (
     <Pressable onPress={() => router.navigate({pathname:"/detail",params:{id:id}})}>
       <Card className="mx-2">
@@ -40,7 +96,9 @@ const ProductList = ({
         />
         
         {/* Favorite Icon Logic */}
-        <Pressable className="absolute top-4 right-4 w-8 h-8 rounded-full items-center justify-center bg-[#00000015]">
+        <Pressable onPress={(e) => 
+        {e.stopPropagation();
+          handleToggleFavourite(id,users.length === 0)}} className="absolute top-4 right-4 w-8 h-8 rounded-full items-center justify-center bg-[#00000015]">
           <Icon 
             // String အစား Component ကို တိုက်ရိုက် pass လုပ်ပါ
             as={Heart} 

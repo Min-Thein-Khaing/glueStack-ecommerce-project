@@ -17,7 +17,6 @@ import { AlertCircleIcon } from "@/components/ui/icon";
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
-import { parseAuthTokens } from "@/api/authTokens";
 import { loginPost } from "@/services/auth";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Image } from "expo-image";
@@ -32,7 +31,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const blurhash =
   "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
 export default function LogIn() {
-  const { signIn, isLoggIn } = useAuthStore();
+  const { signIn } = useAuthStore();
   const [showPass, setShowPass] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
 
@@ -52,11 +51,8 @@ export default function LogIn() {
     try {
       setLoading(true);
       const res = await loginPost(data);
-      const tokens = parseAuthTokens(res);
-      if (!tokens) {
-        throw new Error("Login response missing tokens");
-      }
-      signIn(tokens);
+      const { refreshToken, randToken, token } = res;
+      signIn({ accessToken: token, refreshToken, randomToken: randToken });
       handleToast({ title: "Success", description: res.message, successError: true })
 
     } catch (error: any) {
