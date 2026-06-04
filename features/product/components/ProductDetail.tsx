@@ -8,12 +8,15 @@ import {
 import { HStack } from "@/components/ui/hstack";
 import { CheckIcon, Icon } from "@/components/ui/icon";
 import { Pressable } from "@/components/ui/pressable";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { ProductProps } from "@/types/ProductType";
 import { Heart, Minus, Plus, Star, X } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
+import { fetchToggleProductFavourite } from "@/api/fetch";
+import TapButton from "@/components/TapButton";
 import { useAppToast } from "@/components/Toast";
 import {
   Actionsheet,
@@ -24,14 +27,13 @@ import {
 } from "@/components/ui/actionsheet";
 import { Button, ButtonIcon, ButtonText } from "@/components/ui/button";
 import { useCartStore } from "@/stores/useCartStore";
+import { useCategoryId } from "@/stores/useCategoryId";
 import { CartItem } from "@/types/CartType";
-import TapButton from "@/components/TapButton";
-import { ScrollView } from "react-native";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { useQuery } from "@tanstack/react-query";
-import { fetchProductDetail } from "@/api/fetch";
+import { ScrollView } from "react-native";
 
-const ProductDetail = (product: ProductProps) => {
+const ProductDetail = (product: Partial<ProductProps>) => {
   const {
     brand,
     title,
@@ -46,6 +48,8 @@ const ProductDetail = (product: ProductProps) => {
     description,
     id,
   } = product;
+
+
   const [more, setMore] = useState(false);
   const [color, setColors] = React.useState<string[]>([]);
   const [size, setSizes] = React.useState<string[]>([]);
@@ -64,6 +68,135 @@ const ProductDetail = (product: ProductProps) => {
   const { addCart, clearAllCart } = useCartStore();
   //router
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const { categoryId } = useCategoryId();
+  const { data, mutate ,isPending} = useMutation({
+    mutationFn: fetchToggleProductFavourite,
+    onMutate: async ({ productId, favourite }) => {
+      const prodIdNum = Number(productId);
+      const prodIdStr = String(productId);
+
+      // Cancel outgoing queries (both string and number ID because expo-router gives string)
+      await queryClient.cancelQueries({ queryKey: ["products", categoryId] });
+      await queryClient.cancelQueries({ queryKey: ["product", prodIdStr] });
+      await queryClient.cancelQueries({ queryKey: ["product", prodIdNum] });
+
+      // Snapshot the previous values
+      const previousProducts = queryClient.getQueryData(["products", categoryId]);
+      const previousProductDetail =
+        queryClient.getQueryData(["product", prodIdStr]) ||
+        queryClient.getQueryData(["product", prodIdNum]);
+
+      // Optimistically update products list
+      queryClient.setQueryData(["products", categoryId], (oldData: any) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page: any) => ({
+            ...page,
+            products: page.products.map((p: any) => {
+              if (prodIdNum === p.id) {
+                return {
+                  ...p,
+                  users: favourite ? [{ id: 1 }] : [],
+                };
+              }
+              return p;
+            }),
+          })),
+        };
+      });
+
+      // Optimistically update product detail cache
+      // Must update BOTH string and number key versions
+      const updateDetailFn = (oldData: any) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          users: favourite ? [{ id: 1 }] : [],
+        };
+      };
+      queryClient.setQueryData(["product", prodIdStr], updateDetailFn);
+      queryClient.setQueryData(["product", prodIdNum], updateDetailFn);
+
+      return { previousProducts, previousProductDetail };
+    },
+    onError: (err, variable, context: any) => {
+      queryClient.setQueryData(["products", categoryId], context?.previousProducts);
+      if (context?.previousProductDetail) {
+        queryClient.setQueryData(["product", String(variable.productId)], context.previousProductDetail);
+        queryClient.setQueryData(["product", Number(variable.productId)], context.previousProductDetail);
+      }
+    },
+    onSettled: (data, error, variables) => {
+      const prodId = variables?.productId || id;
+      queryClient.invalidateQueries({ queryKey: ["products",categoryId] })
+      // Invalidate both string and number ID versions
+      queryClient.invalidateQueries({ queryKey: ["product", String(prodId)] })
+      queryClient.invalidateQueries({ queryKey: ["product", Number(prodId)] })
+    },
+  });
+
+  const handleToggleFavourite = (productId: number, favourite: boolean) => {
+    mutate({ productId, favourite });
+  };
+
+  if (isPending) {
+    return (
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <VStack className="gap-4 my-4 mx-4">
+          {/* Brand, Rating, Heart */}
+          <HStack className="justify-between items-center">
+            <HStack className="gap-2 items-center">
+              <Skeleton className="h-4 w-16 rounded bg-gray-200" />
+              <Skeleton className="h-4 w-8 rounded bg-gray-200" />
+              <Skeleton className="h-4 w-8 rounded bg-gray-200" />
+            </HStack>
+            <Skeleton className="w-8 h-8 rounded-full bg-gray-200" />
+          </HStack>
+
+          {/* Title */}
+          <Skeleton className="h-6 w-3/4 rounded bg-gray-200" />
+
+          {/* Price */}
+          <HStack className="items-center gap-2">
+            <Skeleton className="h-6 w-16 rounded bg-gray-200" />
+            <Skeleton className="h-4 w-12 rounded bg-gray-200" />
+          </HStack>
+
+          {/* Description */}
+          <VStack className="gap-2">
+            <Skeleton className="h-4 w-full rounded bg-gray-200" />
+            <Skeleton className="h-4 w-5/6 rounded bg-gray-200" />
+            <Skeleton className="h-4 w-1/4 rounded bg-gray-200" />
+          </VStack>
+
+          {/* Color Section */}
+          <VStack className="gap-2 mt-2">
+            <Skeleton className="h-5 w-32 rounded bg-gray-200" />
+            <HStack className="gap-4">
+              <Skeleton className="h-10 w-20 rounded bg-gray-200" />
+              <Skeleton className="h-10 w-20 rounded bg-gray-200" />
+              <Skeleton className="h-10 w-20 rounded bg-gray-200" />
+            </HStack>
+          </VStack>
+
+          {/* Size Section */}
+          <VStack className="gap-2 mt-4">
+            <Skeleton className="h-5 w-32 rounded bg-gray-200" />
+            <HStack className="gap-4">
+              <Skeleton className="h-10 w-16 rounded bg-gray-200" />
+              <Skeleton className="h-10 w-16 rounded bg-gray-200" />
+              <Skeleton className="h-10 w-16 rounded bg-gray-200" />
+            </HStack>
+          </VStack>
+
+          {/* Set Quantity Button */}
+          <Skeleton className="h-10 w-32 rounded-md mt-4 bg-gray-200" />
+        </VStack>
+      </ScrollView>
+    );
+  }
   const handleSubmit = () => {
     if (quantity === 0) {
       return;
@@ -129,7 +262,7 @@ const ProductDetail = (product: ProductProps) => {
               <Text className="">{star}</Text>
               <Text className="">({quantity})</Text>
             </HStack>
-            <Pressable className=" w-8 h-8 rounded-full items-center justify-center bg-[#00000015]">
+            <Pressable onPress={() => handleToggleFavourite(Number(id), users?.length === 0)} className=" w-8 h-8 rounded-full items-center justify-center bg-[#00000015]">
               <Icon
                 as={Heart}
                 className={`${users?.length > 0 ? "fill-red-500 stroke-none" : "text-red-500"}`}
@@ -171,18 +304,25 @@ const ProductDetail = (product: ProductProps) => {
           >
             <HStack space="2xl">
               {colors
-                ?.filter((item) => item.stock === true)
-                .map((item) => (
-                  <Checkbox key={item.id} value={item.name}>
-                    <CheckboxIndicator>
-                      <CheckboxIcon as={CheckIcon} />
-                    </CheckboxIndicator>
+                ?.filter((item) => {
+                  const stock = item.stock !== undefined ? item.stock : true;
+                  return stock;
+                })
+                .map((item: any) => {
+                  const name = item.name || item.color?.name || "";
+                  const id = item.id || item.color?.id;
+                  return (
+                    <Checkbox key={id} value={name}>
+                      <CheckboxIndicator>
+                        <CheckboxIcon as={CheckIcon} />
+                      </CheckboxIndicator>
 
-                    <CheckboxLabel className="font-bold text-gray-600">
-                      {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
-                    </CheckboxLabel>
-                  </Checkbox>
-                ))}
+                      <CheckboxLabel className="font-bold text-gray-600">
+                        {name ? name.charAt(0).toUpperCase() + name.slice(1) : ""}
+                      </CheckboxLabel>
+                    </Checkbox>
+                  );
+                })}
             </HStack>
           </CheckboxGroup>
 
@@ -200,18 +340,25 @@ const ProductDetail = (product: ProductProps) => {
           >
             <HStack space="2xl" className="justify-start items-center">
               {sizes
-                ?.filter((item: any) => item.stock === true)
-                .map((item) => (
-                  <Checkbox key={item.id} value={item.name}>
-                    <CheckboxIndicator>
-                      <CheckboxIcon as={CheckIcon} />
-                    </CheckboxIndicator>
+                ?.filter((item: any) => {
+                  const stock = item.stock !== undefined ? item.stock : true;
+                  return stock;
+                })
+                .map((item: any) => {
+                  const name = item.name || item.size?.name || "";
+                  const id = item.id || item.size?.id;
+                  return (
+                    <Checkbox key={id} value={name}>
+                      <CheckboxIndicator>
+                        <CheckboxIcon as={CheckIcon} />
+                      </CheckboxIndicator>
 
-                    <CheckboxLabel className="font-bold text-gray-600">
-                      {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
-                    </CheckboxLabel>
-                  </Checkbox>
-                ))}
+                      <CheckboxLabel className="font-bold text-gray-600">
+                        {name ? name.charAt(0).toUpperCase() + name.slice(1) : ""}
+                      </CheckboxLabel>
+                    </Checkbox>
+                  );
+                })}
             </HStack>
           </CheckboxGroup>
           <Button
@@ -222,11 +369,10 @@ const ProductDetail = (product: ProductProps) => {
                 return;
               }
 
-              const title = `Please Select ${
-                color.length === 0
-                  ? `${size.length > 0 ? "Color " : "Color -"}`
-                  : ""
-              } ${size.length === 0 ? "Size" : ""}`;
+              const title = `Please Select ${color.length === 0
+                ? `${size.length > 0 ? "Color " : "Color -"}`
+                : ""
+                } ${size.length === 0 ? "Size" : ""}`;
 
               const description = "Please select before choosing quantity";
 

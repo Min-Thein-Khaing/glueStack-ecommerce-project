@@ -49,7 +49,7 @@ const Detail = () => {
       />
       <ViewPager />
       
-      {product && <ProductDetail {...product}  />}
+      {(isPending || product) && <ProductDetail isPending={isPending} {...product} />}
       
       
     </VStack>
