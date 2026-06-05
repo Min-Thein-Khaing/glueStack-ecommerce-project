@@ -43,6 +43,7 @@ export const fetchToggleProductFavourite = async ({productId,favourite}:{product
 }
 export const fetchProductDetail = async (productId:number):Promise<ProductProps> => {
   try {
+    console.log("fetch product detail", productId)
     const res = await api.get(`users/products/${productId}`);
     return res.data;
   } catch (error: any) {

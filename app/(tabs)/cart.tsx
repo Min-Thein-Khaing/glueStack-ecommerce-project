@@ -32,7 +32,7 @@ const blurhash =
 const Cart = () => {
   const [showAlertDialog, setShowAlertDialog] = useState(false);
   const { carts, clearAllCart, updateCart, removeCart } = useCartStore()
-  
+  const IMG_URL = process.env.EXPO_PUBLIC_IMAGE_URL 
   const totalPrice = carts.reduce((total, cart) => {
     return total + cart.items.reduce((itemTotal, item) => itemTotal + (cart.price * item.quantity), 0);
   }, 0);
@@ -77,7 +77,7 @@ const Cart = () => {
                 {/* IMAGE */}
                 <VStack className="w-20 md:w-32">
                   <Image
-                    source={cart.image}
+                    source={{uri:`${IMG_URL}${cart.image}`}}
                     placeholder={blurhash}
                     transition={1000}
                     style={{

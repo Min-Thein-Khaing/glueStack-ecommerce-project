@@ -49,7 +49,6 @@ const ProductDetail = (product: Partial<ProductProps>) => {
     id,
   } = product;
 
-
   const [more, setMore] = useState(false);
   const [color, setColors] = React.useState<string[]>([]);
   const [size, setSizes] = React.useState<string[]>([]);
@@ -70,7 +69,7 @@ const ProductDetail = (product: Partial<ProductProps>) => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { categoryId } = useCategoryId();
-  const { data, mutate ,isPending} = useMutation({
+  const { data, mutate, isPending } = useMutation({
     mutationFn: fetchToggleProductFavourite,
     onMutate: async ({ productId, favourite }) => {
       const prodIdNum = Number(productId);
@@ -82,7 +81,10 @@ const ProductDetail = (product: Partial<ProductProps>) => {
       await queryClient.cancelQueries({ queryKey: ["product", prodIdNum] });
 
       // Snapshot the previous values
-      const previousProducts = queryClient.getQueryData(["products", categoryId]);
+      const previousProducts = queryClient.getQueryData([
+        "products",
+        categoryId,
+      ]);
       const previousProductDetail =
         queryClient.getQueryData(["product", prodIdStr]) ||
         queryClient.getQueryData(["product", prodIdNum]);
@@ -122,18 +124,20 @@ const ProductDetail = (product: Partial<ProductProps>) => {
       return { previousProducts, previousProductDetail };
     },
     onError: (err, variable, context: any) => {
-      queryClient.setQueryData(["products", categoryId], context?.previousProducts);
+      queryClient.setQueryData(
+        ["products", categoryId],
+        context?.previousProducts,
+      );
       if (context?.previousProductDetail) {
-        queryClient.setQueryData(["product", String(variable.productId)], context.previousProductDetail);
-        queryClient.setQueryData(["product", Number(variable.productId)], context.previousProductDetail);
+        queryClient.setQueryData(
+          ["product", String(variable.productId)],
+          context.previousProductDetail,
+        );
+        queryClient.setQueryData(
+          ["product", Number(variable.productId)],
+          context.previousProductDetail,
+        );
       }
-    },
-    onSettled: (data, error, variables) => {
-      const prodId = variables?.productId || id;
-      queryClient.invalidateQueries({ queryKey: ["products",categoryId] })
-      // Invalidate both string and number ID versions
-      queryClient.invalidateQueries({ queryKey: ["product", String(prodId)] })
-      queryClient.invalidateQueries({ queryKey: ["product", Number(prodId)] })
     },
   });
 
@@ -141,62 +145,6 @@ const ProductDetail = (product: Partial<ProductProps>) => {
     mutate({ productId, favourite });
   };
 
-  if (isPending) {
-    return (
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <VStack className="gap-4 my-4 mx-4">
-          {/* Brand, Rating, Heart */}
-          <HStack className="justify-between items-center">
-            <HStack className="gap-2 items-center">
-              <Skeleton className="h-4 w-16 rounded bg-gray-200" />
-              <Skeleton className="h-4 w-8 rounded bg-gray-200" />
-              <Skeleton className="h-4 w-8 rounded bg-gray-200" />
-            </HStack>
-            <Skeleton className="w-8 h-8 rounded-full bg-gray-200" />
-          </HStack>
-
-          {/* Title */}
-          <Skeleton className="h-6 w-3/4 rounded bg-gray-200" />
-
-          {/* Price */}
-          <HStack className="items-center gap-2">
-            <Skeleton className="h-6 w-16 rounded bg-gray-200" />
-            <Skeleton className="h-4 w-12 rounded bg-gray-200" />
-          </HStack>
-
-          {/* Description */}
-          <VStack className="gap-2">
-            <Skeleton className="h-4 w-full rounded bg-gray-200" />
-            <Skeleton className="h-4 w-5/6 rounded bg-gray-200" />
-            <Skeleton className="h-4 w-1/4 rounded bg-gray-200" />
-          </VStack>
-
-          {/* Color Section */}
-          <VStack className="gap-2 mt-2">
-            <Skeleton className="h-5 w-32 rounded bg-gray-200" />
-            <HStack className="gap-4">
-              <Skeleton className="h-10 w-20 rounded bg-gray-200" />
-              <Skeleton className="h-10 w-20 rounded bg-gray-200" />
-              <Skeleton className="h-10 w-20 rounded bg-gray-200" />
-            </HStack>
-          </VStack>
-
-          {/* Size Section */}
-          <VStack className="gap-2 mt-4">
-            <Skeleton className="h-5 w-32 rounded bg-gray-200" />
-            <HStack className="gap-4">
-              <Skeleton className="h-10 w-16 rounded bg-gray-200" />
-              <Skeleton className="h-10 w-16 rounded bg-gray-200" />
-              <Skeleton className="h-10 w-16 rounded bg-gray-200" />
-            </HStack>
-          </VStack>
-
-          {/* Set Quantity Button */}
-          <Skeleton className="h-10 w-32 rounded-md mt-4 bg-gray-200" />
-        </VStack>
-      </ScrollView>
-    );
-  }
   const handleSubmit = () => {
     if (quantity === 0) {
       return;
@@ -262,7 +210,12 @@ const ProductDetail = (product: Partial<ProductProps>) => {
               <Text className="">{star}</Text>
               <Text className="">({quantity})</Text>
             </HStack>
-            <Pressable onPress={() => handleToggleFavourite(Number(id), users?.length === 0)} className=" w-8 h-8 rounded-full items-center justify-center bg-[#00000015]">
+            <Pressable
+              onPress={() =>
+                handleToggleFavourite(Number(id), users?.length === 0)
+              }
+              className=" w-8 h-8 rounded-full items-center justify-center bg-[#00000015]"
+            >
               <Icon
                 as={Heart}
                 className={`${users?.length > 0 ? "fill-red-500 stroke-none" : "text-red-500"}`}
@@ -318,7 +271,9 @@ const ProductDetail = (product: Partial<ProductProps>) => {
                       </CheckboxIndicator>
 
                       <CheckboxLabel className="font-bold text-gray-600">
-                        {name ? name.charAt(0).toUpperCase() + name.slice(1) : ""}
+                        {name
+                          ? name.charAt(0).toUpperCase() + name.slice(1)
+                          : ""}
                       </CheckboxLabel>
                     </Checkbox>
                   );
@@ -354,7 +309,9 @@ const ProductDetail = (product: Partial<ProductProps>) => {
                       </CheckboxIndicator>
 
                       <CheckboxLabel className="font-bold text-gray-600">
-                        {name ? name.charAt(0).toUpperCase() + name.slice(1) : ""}
+                        {name
+                          ? name.charAt(0).toUpperCase() + name.slice(1)
+                          : ""}
                       </CheckboxLabel>
                     </Checkbox>
                   );
@@ -369,10 +326,11 @@ const ProductDetail = (product: Partial<ProductProps>) => {
                 return;
               }
 
-              const title = `Please Select ${color.length === 0
-                ? `${size.length > 0 ? "Color " : "Color -"}`
-                : ""
-                } ${size.length === 0 ? "Size" : ""}`;
+              const title = `Please Select ${
+                color.length === 0
+                  ? `${size.length > 0 ? "Color " : "Color -"}`
+                  : ""
+              } ${size.length === 0 ? "Size" : ""}`;
 
               const description = "Please select before choosing quantity";
 
