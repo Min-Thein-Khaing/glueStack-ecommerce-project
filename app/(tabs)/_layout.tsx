@@ -23,8 +23,21 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        // tabBarInactiveTintColor:"#687076",
         headerShown: false,
         tabBarButton: HapticTab,
+
+        //dr ka not show label
+        // tabBarShowLabel: false,
+
+        //tabBarShowLabel is false we give but that icon not take label place
+        // tabBarStyle: {
+        //   height: 56,
+        //   backgroundColor: "fff",
+        //   borderTopWidth: 1,
+        //   borderTopColor: "#f0f0f0",
+        //   paddingTop: 8,
+        // },
       }}
     >
       <Tabs.Screen

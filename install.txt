@@ -9,3 +9,16 @@ npm run expo:ios
 library react native otp 
 
 npm i react-native-otp-entry
+
+
+
+
+//logic 
+when i scroll x 
+
+onScroll = (e)=> {
+    const slide = Math.ceil(e.nativeEvent.currentOffset.x / e.nativeEvent.layoutMeasurement.width)
+    if(slide !== di kg ka state pay dr nae ){
+        state ka setstate ko (slide)
+    }
+}
